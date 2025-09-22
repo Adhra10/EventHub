@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub</title>
+    <link rel="icon" type="image/png" href="eventhublogo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase App and Auth SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-menu li {
+            margin: 0 15px;
+        }
+        
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .nav-menu a:hover, .nav-menu a.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-bar {
+            position: relative;
+            margin-right: 20px;
+        }
+        
+        .search-bar input {
+            padding: 10px 15px;
+            padding-right: 40px;
+            border: none;
+            border-radius: 20px;
+            width: 250px;
+            font-size: 14px;
+        }
+        
+        .search-bar button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #ed672d;
+            cursor: pointer;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ee642d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-item i {
+            margin-right: 10px;
+            color: #ed672d;
+        }
+        
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .section-title a {
+            font-size: 1rem;
+            color: #ed672d;
+            text-decoration: none;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 400px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background: linear-gradient(to right, #e7702a, #de6742);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Event Categories */
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .category {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .category:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category.active {
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            color: white;
+        }
+        
+        .category i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Events Grid */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .event-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .event-image {
+            height: 180px;
+            overflow: hidden;
+        }
+        
+        .event-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .event-card:hover .event-image img {
+            transform: scale(1.05);
+        }
+        
+        .event-content {
+            padding: 20px;
+        }
+        
+        .event-date {
+            color: #ed672d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .event-date i {
+            margin-right: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .event-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .event-location {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .event-location i {
+            margin-right: 5px;
+            color: #ed672d;
+            font-size: 0.9rem;
+        }
+        
+        .event-organizer {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .organizer-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+        
+        .organizer-name {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .follow-btn {
+            margin-left: auto;
+            background: none;
+            border: 1px solid #ed672d;
+            color: #ed672d;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .follow-btn:hover {
+            background: #ed672d;
+            color: white;
+        }
+        
+        .event-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .register-btn {
+            padding: 8px 15px;
+            background: linear-gradient(to right, #e7702a, #de6742);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .register-btn.registered {
+            background: #28a745;
+        }
+        
+        .view-map-btn {
+            background: none;
+            border: none;
+            color: #ed672d;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .view-map-btn i {
+            margin-right: 5px;
+        }
+        
+        /* Comments Section */
+        .comments-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .comments-title {
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .comment-form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .comment-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+        
+        .comment-submit {
+            background: linear-gradient(to right, #e7702a, #de6742);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0 20px;
+            cursor: pointer;
+        }
+        
+        .comments-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .comment {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comment:last-child {
+            border-bottom: none;
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .comment-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .comment-author {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .comment-time {
+            font-size: 0.8rem;
+            color: #999;
+            margin-left: 10px;
+        }
+        
+        .comment-text {
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .comment-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .like-btn, .reply-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .like-btn i, .reply-btn i {
+            margin-right: 5px;
+        }
+        
+        .like-btn.liked {
+            color: #ed672d;
+        }
+        
+        /* Footer Styles */
+        .footer {
+            background: linear-gradient(to right, #333, #222);
+            color: white;
+            padding: 40px 0;
+        }
+        
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .footer-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #ff8352;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #ff8352;
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            background: #ff8352;
+            transform: translateY(-3px);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 30px;
+            border-top: 1px solid #444;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+            background: none;
+            border: none;
+        }
+        
+        .modal-title {
+            margin-bottom: 20px;
+            color: #c95415;
+            text-align: center;
+        }
+        
+        /* Profile Page Styles */
+        .profile-container {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-right: 30px;
+        }
+        
+        .profile-info h2 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .profile-info p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .profile-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ed672d;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .profile-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .profile-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-tab.active {
+            color: #ed672d;
+            border-bottom: 2px solid #ed672d;
+        }
+        
+        .profile-content {
+            display: none;
+        }
+        
+        .profile-content.active {
+            display: block;
+        }
+        
+        .events-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        /* Create Event Form */
+        .create-event-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+            display: none;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: #ed672d;
+            outline: none;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .search-bar input {
+                width: 180px;
+            }
+            
+            .events-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .search-bar {
+                display: none;
+            }
+            
+            .hero {
+                height: 300px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .categories {
+                overflow-x: auto;
+                padding-bottom: 10px;
+                flex-wrap: nowrap;
+            }
+            
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .hero {
+                height: 250px;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-avatar {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .profile-stats {
+                justify-content: center;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #ed672d;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo"><img src="eventhublogo.png" height="70" width="70">
+            EventHub
+        </div>
+        
+        <ul class="nav-menu">
+            <li><a href="#" class="active" id="home-link">Home</a></li>
+            <li><a href="#" id="discover-link">Discover</a></li>
+            <li><a href="#" id="categories-link">Categories</a></li>
+            <li><a href="#" id="create-event-link">Create Event</a></li>
+            <li><a href="#" id="about-link">About</a></li>
+        </ul>
+        
+        <div class="user-actions">
+            <div class="search-bar">
+                <input type="text" placeholder="Search events..." id="search-input">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+            
+            <div class="user-profile" id="user-profile">
+                <div class="user-avatar" id="user-avatar">U</div>
+                <span id="user-name">User</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px;"></i>
+                
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="#" class="dropdown-item" id="profile-link">
+                        <i class="fas fa-user"></i> My Profile
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-calendar-check"></i> My Events
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="#" class="dropdown-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>Discover Events That Inspire You</h1>
+            <p>Find technical conferences, business workshops, creative meetups, and more—all tailored to your interests.</p>
+            <button class="btn">Explore Events</button>
+        </div>
+        
+        <!-- Event Categories -->
+        <h2 class="section-title">Browse by Category</h2>
+        <div class="categories">
+            <div class="category active" data-category="All">
+                <i class="fas fa-star"></i> All
+            </div>
+            <div class="category" data-category="Technical">
+                <i class="fas fa-laptop-code"></i> Technical
+            </div>
+            <div class="category" data-category="Business">
+                <i class="fas fa-chart-line"></i> Business
+            </div>
+            <div class="category" data-category="Webinars">
+                <i class="fas fa-desktop"></i> Webinars
+            </div>
+            <div class="category" data-category="Hackathons">
+                <i class="fas fa-code"></i> Hackathons
+            </div>
+            <div class="category" data-category="Creative">
+                <i class="fas fa-paint-brush"></i> Creative
+            </div>
+            <div class="category" data-category="Conferences">
+                <i class="fas fa-users"></i> Conferences
+            </div>
+            <div class="category" data-category="Seminars">
+                <i class="fas fa-graduation-cap"></i> Seminars
+            </div>
+            <div class="category" data-category="Cultural">
+                <i class="fas fa-music"></i> Cultural
+            </div>
+        </div>
+        
+        <!-- Recommended Events -->
+        <h2 class="section-title">Recommended For You <a href="#">View All</a></h2>
+        <div class="events-grid" id="events-grid">
+            <div class="spinner" id="loading-spinner"></div>
+            <!-- Event cards will be dynamically inserted here -->
+        </div>
+        
+        <!-- Profile Page -->
+        <div class="profile-container" id="profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profile-avatar">U</div>
+                <div class="profile-info">
+                    <h2 id="profile-name">User Name</h2>
+                    <p id="profile-college">College Name</p>
+                    <p id="profile-year">Academic Year</p>
+                    <p id="profile-email">user@example.com</p>
+                    
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="events-created">0</div>
+                            <div class="stat-label">Events Created</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="events-registered">0</div>
+                            <div class="stat-label">Events Registered</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="followers-count">0</div>
+                            <div class="stat-label">Followers</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="following-count">0</div>
+                            <div class="stat-label">Following</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-tabs">
+                <div class="profile-tab active" data-tab="created">Created Events</div>
+                <div class="profile-tab" data-tab="registered">Registered Events</div>
+                <div class="profile-tab" data-tab="personal">Personal Info</div>
+            </div>
+            
+            <div class="profile-content active" id="created-events">
+                <div class="events-list" id="created-events-list">
+                    <!-- Created events will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="profile-content" id="registered-events">
+                <div class="events-list" id="registered-events-list">
+                    <!-- Registered events will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="profile-content" id="personal-info">
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="profile-fullname">Full Name</label>
+                        <input type="text" id="profile-fullname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-email-input">Email</label>
+                        <input type="email" id="profile-email-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-college-input">College</label>
+                        <input type="text" id="profile-college-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-year-input">Academic Year</label>
+                        <select id="profile-year-input" required>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-city">City</label>
+                        <input type="text" id="profile-city">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-dob">Date of Birth</label>
+                        <input type="date" id="profile-dob">
+                    </div>
+                    <button type="submit" class="btn">Save Changes</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Create Event Form -->
+        <div class="create-event-form" id="create-event-form">
+            <h2 class="section-title">Create New Event</h2>
+            <form id="event-form">
+                <div class="form-group">
+                    <label for="event-title">Event Title</label>
+                    <input type="text" id="event-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-description">Description</label>
+                    <textarea id="event-description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="event-category">Category</label>
+                    <select id="event-category" required>
+                        <option value="">Select Category</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Business">Business</option>
+                        <option value="Webinars">Webinars</option>
+                        <option value="Hackathons">Hackathons</option>
+                        <option value="Creative">Creative</option>
+                        <option value="Conferences">Conferences</option>
+                        <option value="Seminars">Seminars</option>
+                        <option value="Cultural">Cultural</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="event-date">Date</label>
+                    <input type="date" id="event-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-time">Time</label>
+                    <input type="time" id="event-time" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-location">Location</label>
+                    <input type="text" id="event-location" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-address">Full Address</label>
+                    <textarea id="event-address" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="event-image">Image URL</label>
+                    <input type="url" id="event-image" placeholder="https://example.com/image.jpg">
+                </div>
+                <button type="submit" class="btn">Create Event</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>EventHub</h3>
+                <p>Discover, engage, and connect with events that matter to you.</p>
+                <div class="social-icons">
+                    <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Discover</a></li>
+                    <li><a href="#">Categories</a></li>
+                    <li><a href="#">Create Event</a></li>
+                    <li><a href="#">About Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Help & Support</h3>
+                <ul class="footer-links">
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-map-marker-alt"></i> 123 Event Street, City</li>
+                    <li><i class="fas fa-phone"></i> +1 234 567 8900</li>
+                    <li><i class="fas fa-envelope"></i> info@eventhub.com</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 EventHub. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <!-- Firebase configuration -->
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbf5afbEDRhy0tzLC4W4mOXxpmr6gSyNQ",
+            authDomain: "eventhub-aaefd.firebaseapp.com",
+            projectId: "eventhub-aaefd",
+            storageBucket: "eventhub-aaefd.firebasestorage.app",
+            messagingSenderId: "298691512226",
+            appId: "1:298691512226:web:d77103e513d3cb16ed14fb",
+            measurementId: "G-4MYRJWW827"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Current user data
+        let currentUser = null;
+        let userData = {};
+        
+        // DOM elements
+        const userProfile = document.getElementById('user-profile');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const profileLink = document.getElementById('profile-link');
+        const logoutBtn = document.getElementById('logout-btn');
+        const profileContainer = document.getElementById('profile-container');
+        const createEventForm = document.getElementById('create-event-form');
+        const eventsGrid = document.getElementById('events-grid');
+        const homeLink = document.getElementById('home-link');
+        const discoverLink = document.getElementById('discover-link');
+        const categoriesLink = document.getElementById('categories-link');
+        const createEventLink = document.getElementById('create-event-link');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.querySelector('.search-bar button');
+        
+        // Check authentication state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData();
+                createSampleEvents(); // Create sample events if needed
+                loadEvents();
+            } else {
+                // Redirect to login page if not authenticated
+                window.location.href = "index.html";
+            }
+        });
+        
+        // Function to create sample events
+        function createSampleEvents() {
+            const sampleEvents = [
+                {
+                    title: "Tech Innovators Summit 2025",
+                    description: "Join us for a day of inspiring talks from tech leaders and innovators shaping the future of technology. Network with professionals and learn about emerging trends.",
+                    category: "Conferences",
+                    date: "2025-10-15",
+                    time: "09:00",
+                    location: "Convention Center",
+                    address: "123 Tech Avenue, San Francisco, CA 94103",
+                    image: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "Tech Events Inc.",
+                    attendees: []
+                },
+                {
+                    title: "Web Development Workshop",
+                    description: "Hands-on workshop covering the latest in web development frameworks and best practices. Bring your laptop and code along with our expert instructors.",
+                    category: "Technical",
+                    date: "2025-10-20",
+                    time: "14:00",
+                    location: "Coding Academy",
+                    address: "456 Developer Road, Austin, TX 73301",
+                    image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "Web Dev Community",
+                    attendees: []
+                },
+                {
+                    title: "24-Hour Hackathon Challenge",
+                    description: "Compete in our annual hackathon to build innovative solutions for real-world problems. Great prizes and networking opportunities!",
+                    category: "Hackathons",
+                    date: "2025-11-05",
+                    time: "10:00",
+                    location: "Innovation Hub",
+                    address: "789 Startup Lane, Boston, MA 02101",
+                    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "Hackathon Organizers",
+                    attendees: []
+                },
+                {
+                    title: "Digital Marketing Strategies",
+                    description: "Learn how to create effective digital marketing campaigns that drive results. Case studies and practical exercises included.",
+                    category: "Business",
+                    date: "2025-10-25",
+                    time: "11:00",
+                    location: "Business Center",
+                    address: "321 Marketing Street, Chicago, IL 60601",
+                    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "Marketing Pros",
+                    attendees: []
+                },
+                {
+                    title: "AI & Machine Learning Webinar",
+                    description: "Free webinar on the latest developments in artificial intelligence and machine learning applications.",
+                    category: "Webinars",
+                    date: "2025-10-18",
+                    time: "16:00",
+                    location: "Online Event",
+                    address: "Virtual Meeting",
+                    image: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "AI Research Group",
+                    attendees: []
+                },
+                {
+                    title: "Creative Design Workshop",
+                    description: "Explore your creative side and learn design thinking methodologies with hands-on activities.",
+                    category: "Creative",
+                    date: "2025-11-12",
+                    time: "13:30",
+                    location: "Design Studio",
+                    address: "555 Creative Lane, Portland, OR 97201",
+                    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "Creative Collective",
+                    attendees: []
+                }
+            ];
+
+            // Check if events already exist to avoid duplicates
+            db.collection('events').get().then(snapshot => {
+                if (snapshot.empty) {
+                    sampleEvents.forEach(event => {
+                        db.collection('events').add({
+                            ...event,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            organizerId: currentUser.uid, // Use current user as organizer
+                            comments: []
+                        }).then(() => {
+                            console.log("Sample event created: ", event.title);
+                        }).catch(error => {
+                            console.error("Error creating sample event: ", error);
+                        });
+                    });
+                    // Update user's events created count
+                    db.collection('users').doc(currentUser.uid).update({
+                        eventsCreated: firebase.firestore.FieldValue.increment(sampleEvents.length)
+                    });
+                } else {
+                    console.log("Events already exist, skipping sample creation");
+                }
+            }).catch(error => {
+                console.error("Error checking for existing events: ", error);
+            });
+        }
+
+        // Toggle dropdown menu
+        userProfile.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userProfile.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+        
+        // Logout function
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            auth.signOut().then(() => {
+                window.location.href = "index.html";
+            });
+        });
+        
+        // Show profile
+        profileLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            profileContainer.style.display = 'block';
+            createEventForm.style.display = 'none';
+            document.querySelectorAll('.profile-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById('created-events').style.display = 'block';
+            updateProfileUI();
+        });
+        
+        // Show create event form
+        createEventLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            createEventForm.style.display = 'block';
+            profileContainer.style.display = 'none';
+        });
+        
+        // Show home page
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            createEventForm.style.display = 'none';
+            profileContainer.style.display = 'none';
+        });
+        
+        // Profile tabs
+        document.querySelectorAll('.profile-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.profile-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                tab.classList.add('active');
+                
+                document.querySelectorAll('.profile-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                document.getElementById(`${tab.dataset.tab}-events`).style.display = 'block';
+            });
+        });
+        
+        // Load user data from Firestore
+        function loadUserData() {
+            db.collection('users').doc(currentUser.uid).get()
+            .then(doc => {
+                if (doc.exists) {
+                    userData = doc.data();
+                    updateUI();
+                } else {
+                    // Create user document if it doesn't exist
+                    db.collection('users').doc(currentUser.uid).set({
+                        name: currentUser.displayName || 'User',
+                        email: currentUser.email,
+                        college: '',
+                        academicYear: '',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        eventsCreated: 0,
+                        eventsRegistered: 0,
+                        followers: 0,
+                        following: 0
+                    }).then(() => {
+                        loadUserData();
+                    });
+                }
+            });
+        }
+        
+        // Update UI with user data
+        function updateUI() {
+            userAvatar.textContent = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
+            userName.textContent = userData.name || 'User';
+        }
+        
+        // Update profile UI
+        function updateProfileUI() {
+            document.getElementById('profile-avatar').textContent = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
+            document.getElementById('profile-name').textContent = userData.name || 'User';
+            document.getElementById('profile-college').textContent = userData.college || 'Not specified';
+            document.getElementById('profile-year').textContent = userData.academicYear || 'Not specified';
+            document.getElementById('profile-email').textContent = userData.email || 'Not specified';
+            document.getElementById('events-created').textContent = userData.eventsCreated || 0;
+            document.getElementById('events-registered').textContent = userData.eventsRegistered || 0;
+            document.getElementById('followers-count').textContent = userData.followers || 0;
+            document.getElementById('following-count').textContent = userData.following || 0;
+            
+            // Fill form fields
+            document.getElementById('profile-fullname').value = userData.name || '';
+            document.getElementById('profile-email-input').value = userData.email || '';
+            document.getElementById('profile-college-input').value = userData.college || '';
+            document.getElementById('profile-year-input').value = userData.academicYear || '';
+            document.getElementById('profile-city').value = userData.city || '';
+            document.getElementById('profile-dob').value = userData.dob || '';
+        }
+        
+        // Save profile changes
+        document.getElementById('profile-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const updatedData = {
+                name: document.getElementById('profile-fullname').value,
+                email: document.getElementById('profile-email-input').value,
+                college: document.getElementById('profile-college-input').value,
+                academicYear: document.getElementById('profile-year-input').value,
+                city: document.getElementById('profile-city').value,
+                dob: document.getElementById('profile-dob').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            db.collection('users').doc(currentUser.uid).update(updatedData)
+            .then(() => {
+                alert('Profile updated successfully!');
+                loadUserData();
+                updateProfileUI();
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                alert('Error updating profile. Please try again.');
+            });
+        });
+        
+        // Create new event
+        document.getElementById('event-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const eventData = {
+                title: document.getElementById('event-title').value,
+                description: document.getElementById('event-description').value,
+                category: document.getElementById('event-category').value,
+                date: document.getElementById('event-date').value,
+                time: document.getElementById('event-time').value,
+                location: document.getElementById('event-location').value,
+                address: document.getElementById('event-address').value,
+                image: document.getElementById('event-image').value || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1350&q=80',
+                organizerId: currentUser.uid,
+                organizerName: userData.name,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                attendees: [],
+                comments: []
+            };
+            
+            db.collection('events').add(eventData)
+            .then(docRef => {
+                // Update user's events created count
+                db.collection('users').doc(currentUser.uid).update({
+                    eventsCreated: firebase.firestore.FieldValue.increment(1)
+                });
+                
+                alert('Event created successfully!');
+                document.getElementById('event-form').reset();
+                loadEvents();
+            })
+            .catch(error => {
+                console.error('Error creating event:', error);
+                alert('Error creating event. Please try again.');
+            });
+        });
+        
+        // Load events from Firestore
+        function loadEvents() {
+            eventsGrid.innerHTML = '<div class="spinner" id="loading-spinner"></div>';
+            
+            db.collection('events').orderBy('createdAt', 'desc').get()
+            .then(querySnapshot => {
+                eventsGrid.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    eventsGrid.innerHTML = `
+                        <div class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                            <h3 style="color: #666;">No events found</h3>
+                            <p style="color: #999;">Be the first to create an event!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const event = doc.data();
+                    event.id = doc.id;
+                    
+                    // Check if user is registered for this event
+                    const isRegistered = event.attendees && event.attendees.includes(currentUser.uid);
+                    
+                    const eventCard = document.createElement('div');
+                    eventCard.className = 'event-card';
+                    eventCard.innerHTML = `
+                        <div class="event-image">
+                            <img src="${event.image}" alt="${event.title}">
+                        </div>
+                        <div class="event-content">
+                            <div class="event-date">
+                                <i class="far fa-calendar-alt"></i> ${formatDate(event.date)} at ${event.time}
+                            </div>
+                            <h3 class="event-title">${event.title}</h3>
+                            <div class="event-description" style="display: none;">${event.description}</div>
+                            <div class="event-category" style="display: none;">${event.category}</div>
+                            <div class="event-location">
+                                <i class="fas fa-map-marker-alt"></i> ${event.location}
+                            </div>
+                            <div class="event-organizer">
+                                <div class="organizer-avatar">${event.organizerName ? event.organizerName.charAt(0).toUpperCase() : 'O'}</div>
+                                <div class="organizer-name">${event.organizerName}</div>
+                                <button class="follow-btn">Follow</button>
+                            </div>
+                            <div class="event-actions">
+                                <button class="register-btn ${isRegistered ? 'registered' : ''}" data-event-id="${event.id}">
+                                    ${isRegistered ? 'Registered' : 'Register'}
+                                </button>
+                                <button class="view-map-btn" onclick="viewOnMap('${event.address}')">
+                                    <i class="fas fa-map"></i> View Map
+                                </button>
+                            </div>
+                        </div>
+                        <div class="comments-section">
+                            <div class="comments-header">
+                                <h4 class="comments-title
+                                                                <h4 class="comments-title">Comments</h4>
+                            </div>
+                            <form class="comment-form" data-event-id="${event.id}">
+                                <input type="text" class="comment-input" placeholder="Add a comment..." required>
+                                <button type="submit" class="comment-submit">Post</button>
+                            </form>
+                            <div class="comments-list" id="comments-${event.id}">
+                                ${event.comments && event.comments.length > 0 ? 
+                                    event.comments.map(comment => `
+                                        <div class="comment">
+                                            <div class="comment-header">
+                                                <div class="comment-avatar">${comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U'}</div>
+                                                <div class="comment-author">${comment.userName || 'User'}</div>
+                                                <div class="comment-time">${formatTime(comment.timestamp)}</div>
+                                            </div>
+                                            <div class="comment-text">${comment.text}</div>
+                                            <div class="comment-actions">
+                                                <button class="like-btn ${comment.likes && comment.likes.includes(currentUser.uid) ? 'liked' : ''}" data-comment-id="${comment.id}">
+                                                    <i class="fas fa-thumbs-up"></i> ${comment.likes ? comment.likes.length : 0}
+                                                </button>
+                                                <button class="reply-btn">
+                                                    <i class="fas fa-reply"></i> Reply
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `).join('') : 
+                                    '<p style="text-align: center; color: #999; padding: 20px;">No comments yet. Be the first to comment!</p>'
+                                }
+                            </div>
+                        </div>
+                    `;
+                    eventsGrid.appendChild(eventCard);
+                });
+                
+                // Add event listeners to the newly created elements
+                addEventListeners();
+            })
+            .catch(error => {
+                console.error('Error loading events:', error);
+                eventsGrid.innerHTML = `
+                    <div class="error-message" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff6b6b; margin-bottom: 20px;"></i>
+                        <h3 style="color: #666;">Error loading events</h3>
+                        <p style="color: #999;">Please try again later.</p>
+                    </div>
+                `;
+            });
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        // Format time for comments
+        function formatTime(timestamp) {
+            if (!timestamp) return 'Recently';
+            
+            const date = timestamp.toDate();
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+            
+            return date.toLocaleDateString();
+        }
+        
+        // View event on map
+        function viewOnMap(address) {
+            // Encode the address for the Google Maps URL
+            const encodedAddress = encodeURIComponent(address);
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+        }
+        
+        // Add event listeners to dynamic elements
+        function addEventListeners() {
+            // Register for event buttons
+            document.querySelectorAll('.register-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const eventId = this.dataset.eventId;
+                    const isRegistered = this.classList.contains('registered');
+                    
+                    if (isRegistered) {
+                        unregisterFromEvent(eventId, this);
+                    } else {
+                        registerForEvent(eventId, this);
+                    }
+                });
+            });
+            
+            // Comment forms
+            document.querySelectorAll('.comment-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const eventId = this.dataset.eventId;
+                    const commentInput = this.querySelector('.comment-input');
+                    const commentText = commentInput.value.trim();
+                    
+                    if (commentText) {
+                        addComment(eventId, commentText, this);
+                        commentInput.value = '';
+                    }
+                });
+            });
+            
+            // Like buttons for comments
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const commentId = this.dataset.commentId;
+                    const isLiked = this.classList.contains('liked');
+                    
+                    if (isLiked) {
+                        unlikeComment(commentId, this);
+                    } else {
+                        likeComment(commentId, this);
+                    }
+                });
+            });
+            
+            // Follow buttons
+            document.querySelectorAll('.follow-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const isFollowing = this.textContent === 'Following';
+                    
+                    if (isFollowing) {
+                        this.textContent = 'Follow';
+                        this.style.background = 'none';
+                        this.style.color = '#ed672d';
+                    } else {
+                        this.textContent = 'Following';
+                        this.style.background = '#ed672d';
+                        this.style.color = 'white';
+                    }
+                });
+            });
+        }
+        
+        // Register for an event
+        function registerForEvent(eventId, button) {
+            db.collection('events').doc(eventId).update({
+                attendees: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+            })
+            .then(() => {
+                button.textContent = 'Registered';
+                button.classList.add('registered');
+                
+                // Update user's events registered count
+                db.collection('users').doc(currentUser.uid).update({
+                    eventsRegistered: firebase.firestore.FieldValue.increment(1)
+                });
+                
+                loadUserData(); // Refresh user data
+            })
+            .catch(error => {
+                console.error('Error registering for event:', error);
+                alert('Error registering for event. Please try again.');
+            });
+        }
+        
+        // Unregister from an event
+        function unregisterFromEvent(eventId, button) {
+            db.collection('events').doc(eventId).update({
+                attendees: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
+            })
+            .then(() => {
+                button.textContent = 'Register';
+                button.classList.remove('registered');
+                
+                // Update user's events registered count
+                db.collection('users').doc(currentUser.uid).update({
+                    eventsRegistered: firebase.firestore.FieldValue.increment(-1)
+                });
+                
+                loadUserData(); // Refresh user data
+            })
+            .catch(error => {
+                console.error('Error unregistering from event:', error);
+                alert('Error unregistering from event. Please try again.');
+            });
+        }
+        
+        // Add a comment to an event
+        function addComment(eventId, commentText, form) {
+            const comment = {
+                id: Date.now().toString(), // Simple ID generation
+                userId: currentUser.uid,
+                userName: userData.name,
+                text: commentText,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                likes: []
+            };
+            
+            db.collection('events').doc(eventId).update({
+                comments: firebase.firestore.FieldValue.arrayUnion(comment)
+            })
+            .then(() => {
+                // Reload events to show the new comment
+                loadEvents();
+            })
+            .catch(error => {
+                console.error('Error adding comment:', error);
+                alert('Error adding comment. Please try again.');
+            });
+        }
+        
+        // Like a comment
+        function likeComment(commentId, button) {
+            // This would need to be implemented with a more complex data structure
+            // For now, we'll just toggle the UI
+            button.classList.add('liked');
+            const currentLikes = parseInt(button.textContent) || 0;
+            button.innerHTML = `<i class="fas fa-thumbs-up"></i> ${currentLikes + 1}`;
+        }
+        
+        // Unlike a comment
+        function unlikeComment(commentId, button) {
+            button.classList.remove('liked');
+            const currentLikes = parseInt(button.textContent) || 1;
+            button.innerHTML = `<i class="fas fa-thumbs-up"></i> ${currentLikes - 1}`;
+        }
+        
+        // Category filtering
+        document.querySelectorAll('.category').forEach(category => {
+            category.addEventListener('click', function() {
+                document.querySelectorAll('.category').forEach(cat => {
+                    cat.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const selectedCategory = this.dataset.category;
+                filterEventsByCategory(selectedCategory);
+            });
+        });
+        
+        // Filter events by category
+        function filterEventsByCategory(category) {
+            const eventCards = document.querySelectorAll('.event-card');
+            
+            eventCards.forEach(card => {
+                const eventCategory = card.querySelector('.event-category').textContent;
+                
+                if (category === 'All' || eventCategory === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Search functionality
+        searchInput.addEventListener('input', debounce(function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            searchEvents(searchTerm);
+        }, 300));
+        
+        searchButton.addEventListener('click', function() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            searchEvents(searchTerm);
+        });
+        
+        // Debounce function to limit search frequency
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Search events
+        function searchEvents(searchTerm) {
+            const eventCards = document.querySelectorAll('.event-card');
+            
+            if (!searchTerm) {
+                eventCards.forEach(card => {
+                    card.style.display = 'block';
+                });
+                return;
+            }
+            
+            eventCards.forEach(card => {
+                const title = card.querySelector('.event-title').textContent.toLowerCase();
+                const description = card.querySelector('.event-description').textContent.toLowerCase();
+                const location = card.querySelector('.event-location').textContent.toLowerCase();
+                const organizer = card.querySelector('.organizer-name').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm) || 
+                    location.includes(searchTerm) || organizer.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Load user's created and registered events for profile
+        function loadUserEvents() {
+            // Load created events
+            db.collection('events').where('organizerId', '==', currentUser.uid).get()
+            .then(querySnapshot => {
+                const createdEventsList = document.getElementById('created-events-list');
+                createdEventsList.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    createdEventsList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">You haven\'t created any events yet.</p>';
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const event = doc.data();
+                    const eventElement = createEventElementForProfile(event);
+                    createdEventsList.appendChild(eventElement);
+                });
+            });
+            
+            // Load registered events
+            db.collection('events').where('attendees', 'array-contains', currentUser.uid).get()
+            .then(querySnapshot => {
+                const registeredEventsList = document.getElementById('registered-events-list');
+                registeredEventsList.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    registeredEventsList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">You haven\'t registered for any events yet.</p>';
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const event = doc.data();
+                    const eventElement = createEventElementForProfile(event);
+                    registeredEventsList.appendChild(eventElement);
+                });
+            });
+        }
+        
+        // Create event element for profile page
+        function createEventElementForProfile(event) {
+            const eventElement = document.createElement('div');
+            eventElement.className = 'event-card';
+            eventElement.innerHTML = `
+                <div class="event-image">
+                    <img src="${event.image}" alt="${event.title}">
+                </div>
+                <div class="event-content">
+                    <div class="event-date">
+                        <i class="far fa-calendar-alt"></i> ${formatDate(event.date)} at ${event.time}
+                    </div>
+                    <h3 class="event-title">${event.title}</h3>
+                    <div class="event-location">
+                        <i class="fas fa-map-marker-alt"></i> ${event.location}
+                    </div>
+                    <div class="event-actions">
+                        <button class="view-map-btn" onclick="viewOnMap('${event.address}')">
+                            <i class="fas fa-map"></i> View Map
+                        </button>
+                        <span style="color: #666; font-size: 0.9rem;">
+                            ${event.attendees ? event.attendees.length : 0} attendees
+                        </span>
+                    </div>
+                </div>
+            `;
+            return eventElement;
+        }
+        
+        // Update profile UI when profile tab is clicked
+        profileLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            profileContainer.style.display = 'block';
+            createEventForm.style.display = 'none';
+            document.querySelectorAll('.profile-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById('created-events').style.display = 'block';
+            updateProfileUI();
+            loadUserEvents();
+        });
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is authenticated
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    loadUserData();
+                    loadEvents();
+                } else {
+                    window.location.href = "index.html";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
