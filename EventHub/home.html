@@ -1,0 +1,2831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub - Discover Amazing Events</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/3QZz3qE.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Help & Support Script -->
+    <script src="help-support.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-menu li {
+            margin: 0 15px;
+        }
+        
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .nav-menu a:hover, .nav-menu a.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-bar {
+            position: relative;
+            margin-right: 20px;
+        }
+        
+        .search-bar input {
+            padding: 10px 15px;
+            padding-right: 40px;
+            border: none;
+            border-radius: 20px;
+            width: 250px;
+            font-size: 14px;
+        }
+        
+        .search-bar button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #ed672d;
+            cursor: pointer;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ee642d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-item i {
+            margin-right: 10px;
+            color: #ed672d;
+        }
+        
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .section-title a {
+            font-size: 1rem;
+            color: #ed672d;
+            text-decoration: none;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 400px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background: linear-gradient(to right, #e7702a, #de6742);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Event Categories */
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .category {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .category:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category.active {
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            color: white;
+        }
+        
+        .category i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Events Grid */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .event-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .event-image {
+            height: 180px;
+            overflow: hidden;
+        }
+        
+        .event-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .event-card:hover .event-image img {
+            transform: scale(1.05);
+        }
+        
+        .event-content {
+            padding: 20px;
+        }
+        
+        .event-date {
+            color: #ed672d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .event-date i {
+            margin-right: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .event-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .event-location {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .event-location i {
+            margin-right: 5px;
+            color: #ed672d;
+            font-size: 0.9rem;
+        }
+        
+        .event-organizer {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .organizer-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+        
+        .organizer-name {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .follow-btn {
+            margin-left: auto;
+            background: none;
+            border: 1px solid #ed672d;
+            color: #ed672d;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .follow-btn:hover {
+            background: #ed672d;
+            color: white;
+        }
+        
+        .event-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .register-btn {
+            padding: 8px 15px;
+            background: linear-gradient(to right, #e7702a, #de6742);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .register-btn.registered {
+            background: #28a745;
+        }
+        
+        .view-map-btn {
+            background: none;
+            border: none;
+            color: #ed672d;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .view-map-btn i {
+            margin-right: 5px;
+        }
+        
+        /* Comments Section */
+        .comments-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .comments-title {
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .comment-form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .comment-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+        
+        .comment-submit {
+            background: linear-gradient(to right, #e7702a, #de6742);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0 20px;
+            cursor: pointer;
+        }
+        
+        .comments-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .comment {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comment:last-child {
+            border-bottom: none;
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .comment-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .comment-author {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .comment-time {
+            font-size: 0.8rem;
+            color: #999;
+            margin-left: 10px;
+        }
+        
+        .comment-text {
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .comment-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .like-btn, .reply-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .like-btn i, .reply-btn i {
+            margin-right: 5px;
+        }
+        
+        .like-btn.liked {
+            color: #ed672d;
+        }
+        
+        /* Footer Styles */
+        .footer {
+            background: linear-gradient(to right, #333, #222);
+            color: white;
+            padding: 40px 0;
+        }
+        
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .footer-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #ff8352;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #ff8352;
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            background: #ff8352;
+            transform: translateY(-3px);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 30px;
+            border-top: 1px solid #444;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+            background: none;
+            border: none;
+        }
+        
+        .modal-title {
+            margin-bottom: 20px;
+            color: #c95415;
+            text-align: center;
+        }
+        
+        /* Profile Page Styles */
+        .profile-container {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-right: 30px;
+        }
+        
+        .profile-info h2 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .profile-info p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .profile-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ed672d;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .profile-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .profile-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-tab.active {
+            color: #ed672d;
+            border-bottom: 2px solid #ed672d;
+        }
+        
+        .profile-content {
+            display: none;
+        }
+        
+        .profile-content.active {
+            display: block;
+        }
+        
+        .events-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        /* Create Event Form */
+        .create-event-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+            display: none;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: #ed672d;
+            outline: none;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* About Page Styles */
+        .about-container {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+        
+        .about-section {
+            margin-bottom: 30px;
+        }
+        
+        .about-section h2 {
+            color: #ed672d;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .about-section p {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .team-member {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .team-member-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 auto 15px;
+        }
+        
+        .team-member h3 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .team-member p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* Discover Page Styles */
+        .discover-container {
+            display: none;
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .filter-group select, .filter-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .search-bar input {
+                width: 180px;
+            }
+            
+            .events-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .search-bar {
+                display: none;
+            }
+            
+            .hero {
+                height: 300px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .categories {
+                overflow-x: auto;
+                padding-bottom: 10px;
+                flex-wrap: nowrap;
+            }
+            
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-avatar {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .profile-stats {
+                justify-content: center;
+            }
+            
+            .team-members {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .hero {
+                height: 250px;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #ed672d;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* User list styles */
+        .users-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .user-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-card-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+        
+        .user-card-info h3 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .user-card-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toast-success {
+            background: #4CAF50;
+        }
+        
+        .toast-error {
+            background: #f44336;
+        }
+        
+        .toast-info {
+            background: #2196F3;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        /* Gamification Styles */
+        .gamification-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .points-display {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 3000;
+            border-left: 4px solid #FFD700;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .level-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .level-progress {
+            height: 100%;
+            background: linear-gradient(to right, #ff6788, #ff8352);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .leaderboard-rank {
+            font-weight: bold;
+            margin-right: 15px;
+            color: #ed672d;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-calendar-alt"></i>
+            EventHub
+        </div>
+        
+        <ul class="nav-menu">
+            <li><a href="#" class="active" id="home-link">Home</a></li>
+            <li><a href="#" id="discover-link">Discover</a></li>
+            <li><a href="#" id="categories-link">Categories</a></li>
+            <li><a href="#" id="create-event-link">Create Event</a></li>
+            <li><a href="#" id="about-link">About</a></li>
+        </ul>
+        
+        <div class="user-actions">
+            <div class="search-bar">
+                <input type="text" placeholder="Search events..." id="search-input">
+                <button id="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+            
+            <div class="user-profile" id="user-profile">
+                <div class="user-avatar" id="user-avatar">U</div>
+                <span id="user-name">User</span>
+                <i class="fas fa-chevron-down" style="margin-left: 5px;"></i>
+                
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="#" class="dropdown-item" id="profile-link">
+                        <i class="fas fa-user"></i> My Profile
+                    </a>
+                    <a href="#" class="dropdown-item" id="my-events-link">
+                        <i class="fas fa-calendar-check"></i> My Events
+                    </a>
+                    <a href="#" class="dropdown-item" id="leaderboard-link">
+                        <i class="fas fa-trophy"></i> Leaderboard
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="#" class="dropdown-item" id="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>Discover Events That Inspire You</h1>
+            <p>Find technical conferences, business workshops, creative meetups, and more—all tailored to your interests.</p>
+            <button class="btn" id="explore-events-btn">Explore Events</button>
+        </div>
+        
+        <!-- Home Page Content -->
+        <div id="home-content">
+            <!-- Event Categories -->
+            <h2 class="section-title">Browse by Category</h2>
+            <div class="categories">
+                <div class="category active" data-category="All">
+                    <i class="fas fa-star"></i> All
+                </div>
+                <div class="category" data-category="Technical">
+                    <i class="fas fa-laptop-code"></i> Technical
+                </div>
+                <div class="category" data-category="Business">
+                    <i class="fas fa-chart-line"></i> Business
+                </div>
+                <div class="category" data-category="Webinars">
+                    <i class="fas fa-desktop"></i> Webinars
+                </div>
+                <div class="category" data-category="Hackathons">
+                    <i class="fas fa-code"></i> Hackathons
+                </div>
+                <div class="category" data-category="Creative">
+                    <i class="fas fa-paint-brush"></i> Creative
+                </div>
+                <div class="category" data-category="Conferences">
+                    <i class="fas fa-users"></i> Conferences
+                </div>
+                <div class="category" data-category="Seminars">
+                    <i class="fas fa-graduation-cap"></i> Seminars
+                </div>
+                <div class="category" data-category="Cultural">
+                    <i class="fas fa-music"></i> Cultural
+                </div>
+            </div>
+            
+            <!-- Recommended Events -->
+            <h2 class="section-title">Recommended For You <a href="#" id="view-all-link">View All</a></h2>
+            <div class="events-grid" id="events-grid">
+                <div class="spinner" id="loading-spinner"></div>
+                <!-- Event cards will be dynamically inserted here -->
+            </div>
+            
+            <!-- Load More Button -->
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" id="load-more-btn" style="display: none;">Load More Events</button>
+            </div>
+        </div>
+        
+        <!-- Discover Page Content -->
+        <div class="discover-container" id="discover-content">
+            <h2 class="section-title">Discover Events</h2>
+            
+            <div class="filter-section">
+                <h3>Filter Events</h3>
+                <div class="filter-options">
+                    <div class="filter-group">
+                        <label for="discover-category">Category</label>
+                        <select id="discover-category">
+                            <option value="All">All Categories</option>
+                            <option value="Technical">Technical</option>
+                            <option value="Business">Business</option>
+                            <option value="Webinars">Webinars</option>
+                            <option value="Hackathons">Hackathons</option>
+                            <option value="Creative">Creative</option>
+                            <option value="Conferences">Conferences</option>
+                            <option value="Seminars">Seminars</option>
+                            <option value="Cultural">Cultural</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="discover-date">Date</label>
+                        <input type="date" id="discover-date">
+                    </div>
+                    <div class="filter-group">
+                        <label for="discover-location">Location</label>
+                        <input type="text" id="discover-location" placeholder="City or venue">
+                    </div>
+                </div>
+                <button class="btn" id="apply-filters" style="margin-top: 15px;">Apply Filters</button>
+            </div>
+            
+            <div class="events-grid" id="discover-events-grid">
+                <!-- Discover events will be inserted here -->
+            </div>
+        </div>
+        
+        <!-- About Page Content -->
+        <div class="about-container" id="about-content">
+            <h2 class="section-title">About EventHub</h2>
+            
+            <div class="about-section">
+                <h2>Our Mission</h2>
+                <p>EventHub is dedicated to connecting people through meaningful events. We believe that great things happen when people come together to share knowledge, experiences, and passions.</p>
+                <p>Our platform makes it easy to discover, create, and participate in events that matter to you, whether you're looking to learn new skills, network with professionals, or simply enjoy cultural experiences.</p>
+            </div>
+            
+            <div class="about-section">
+                <h2>What We Offer</h2>
+                <p>EventHub provides a comprehensive platform for event management and discovery:</p>
+                <ul style="color: #555; line-height: 1.6; margin-left: 20px;">
+                    <li>Discover events tailored to your interests</li>
+                    <li>Create and promote your own events</li>
+                    <li>Connect with like-minded individuals</li>
+                    <li>Manage event registrations and attendance</li>
+                    <li>Share experiences through comments and feedback</li>
+                </ul>
+            </div>
+            
+            <div class="about-section">
+                <h2>Our Team</h2>
+                <p>We're a passionate team of developers, designers, and event enthusiasts committed to creating the best event discovery platform.</p>
+                
+                <div class="team-members">
+                    <div class="team-member">
+                        <div class="team-member-avatar">A</div>
+                        <h3>ADHRA</h3>
+                       
+                    </div>
+                    <div class="team-member">
+                        <div class="team-member-avatar">HM</div>
+                        <h3>HUZAIFA MEHNAZ</h3>
+                       
+                    </div>
+                    <div class="team-member">
+                        <div class="team-member-avatar">A</div>
+                        <h3>AFRAA K S</h3>
+                      
+                    </div>
+                    <div class="team-member">
+                        <div class="team-member-avatar">D</div>
+                        <h3>DIVYA</h3>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Page -->
+        <div class="profile-container" id="profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profile-avatar">U</div>
+                <div class="profile-info">
+                    <h2 id="profile-name">User Name</h2>
+                    <p id="profile-college">College Name</p>
+                    <p id="profile-year">Academic Year</p>
+                    <p id="profile-email">user@example.com</p>
+                    
+                    <!-- Gamification Stats -->
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="events-created">0</div>
+                            <div class="stat-label">Events Created</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="events-registered">0</div>
+                            <div class="stat-label">Events Registered</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value points-display" id="user-points">0</div>
+                            <div class="stat-label">Points</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">Level <span id="user-level">1</span></div>
+                            <div class="stat-label">Level</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Level Progress Bar -->
+                    <div class="level-bar">
+                        <div class="level-progress" id="level-progress" style="width: 0%"></div>
+                    </div>
+                    <div style="text-align: center; font-size: 0.8rem; color: #666;">
+                        <span id="current-points">0</span> / <span id="next-level-points">100</span> points to next level
+                    </div>
+                    
+                    <!-- Badges Display -->
+                    <div id="badges-container" style="margin-top: 20px; display: none;">
+                        <h3>Your Badges</h3>
+                        <div id="badges-list"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-tabs">
+                <div class="profile-tab active" data-tab="created">Created Events</div>
+                <div class="profile-tab" data-tab="registered">Registered Events</div>
+                <div class="profile-tab" data-tab="followers">Followers</div>
+                <div class="profile-tab" data-tab="following">Following</div>
+                <div class="profile-tab" data-tab="leaderboard">Leaderboard</div>
+                <div class="profile-tab" data-tab="personal">Personal Info</div>
+            </div>
+            
+            <div class="profile-content active" id="created-events">
+                <div class="events-list" id="created-events-list">
+                    <!-- Created events will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="profile-content" id="registered-events">
+                <div class="events-list" id="registered-events-list">
+                    <!-- Registered events will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="profile-content" id="followers">
+                <div class="users-list" id="followers-list">
+                    <!-- Followers will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="profile-content" id="following">
+                <div class="users-list" id="following-list">
+                    <!-- Following users will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="profile-content" id="leaderboard">
+                <h3>Community Leaderboard</h3>
+                <div class="users-list" id="leaderboard-list">
+                    <!-- Leaderboard will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="profile-content" id="personal-info">
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="profile-fullname">Full Name</label>
+                        <input type="text" id="profile-fullname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-email-input">Email</label>
+                        <input type="email" id="profile-email-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-college-input">College</label>
+                        <input type="text" id="profile-college-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-year-input">Academic Year</label>
+                        <select id="profile-year-input" required>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-city">City</label>
+                        <input type="text" id="profile-city">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-dob">Date of Birth</label>
+                        <input type="date" id="profile-dob">
+                    </div>
+                    <button type="submit" class="btn">Save Changes</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Create Event Form -->
+        <div class="create-event-form" id="create-event-form">
+            <h2 class="section-title">Create New Event</h2>
+            <form id="event-form">
+                <div class="form-group">
+                    <label for="event-title">Event Title</label>
+                    <input type="text" id="event-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-description">Description</label>
+                    <textarea id="event-description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="event-category">Category</label>
+                    <select id="event-category" required>
+                        <option value="">Select Category</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Business">Business</option>
+                        <option value="Webinars">Webinars</option>
+                        <option value="Hackathons">Hackathons</option>
+                        <option value="Creative">Creative</option>
+                        <option value="Conferences">Conferences</option>
+                        <option value="Seminars">Seminars</option>
+                        <option value="Cultural">Cultural</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="event-date">Date</label>
+                    <input type="date" id="event-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-time">Time</label>
+                    <input type="time" id="event-time" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-location">Location</label>
+                    <input type="text" id="event-location" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-address">Full Address</label>
+                    <textarea id="event-address" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="event-image">Image URL</label>
+                    <input type="url" id="event-image" placeholder="https://example.com/image.jpg">
+                </div>
+                <button type="submit" class="btn">Create Event</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>EventHub</h3>
+                <p>Discover, engage, and connect with events that matter to you.</p>
+                <div class="social-icons">
+                    <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#" class="footer-home-link">Home</a></li>
+                    <li><a href="#" class="footer-discover-link">Discover</a></li>
+                    <li><a href="#" class="footer-categories-link">Categories</a></li>
+                    <li><a href="#" class="footer-create-event-link">Create Event</a></li>
+                    <li><a href="#" class="footer-about-link">About Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Help & Support</h3>
+                <ul class="footer-links">
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-map-marker-alt"></i> 123 Event Street, City</li>
+                    <li><i class="fas fa-phone"></i> +1 234 567 8900</li>
+                    <li><i class="fas fa-envelope"></i> info@eventhub.com</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            
+        </div>
+    </footer>
+
+    <!-- User Profile Modal -->
+    <div class="modal" id="user-profile-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-user-modal">&times;</button>
+            <h2 class="modal-title" id="modal-user-name">User Profile</h2>
+            <div id="modal-user-content">
+                <!-- User details will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbf5afbEDRhy0tzLC4W4mOXxpmr6gSyNQ",
+            authDomain: "eventhub-aaefd.firebaseapp.com",
+            projectId: "eventhub-aaefd",
+            storageBucket: "eventhub-aaefd.firebasestorage.app",
+            messagingSenderId: "298691512226",
+            appId: "1:298691512226:web:d77103e513d3cb16ed14fb",
+            measurementId: "G-4MYRJWW827"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Current user data
+        let currentUser = null;
+        let userData = {};
+        let lastEventDoc = null;
+        const EVENTS_PER_PAGE = 6;
+        
+        // DOM elements
+        const userProfile = document.getElementById('user-profile');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const profileLink = document.getElementById('profile-link');
+        const myEventsLink = document.getElementById('my-events-link');
+        const leaderboardLink = document.getElementById('leaderboard-link');
+        const logoutBtn = document.getElementById('logout-btn');
+        const profileContainer = document.getElementById('profile-container');
+        const createEventForm = document.getElementById('create-event-form');
+        const eventsGrid = document.getElementById('events-grid');
+        const homeLink = document.getElementById('home-link');
+        const discoverLink = document.getElementById('discover-link');
+        const categoriesLink = document.getElementById('categories-link');
+        const createEventLink = document.getElementById('create-event-link');
+        const aboutLink = document.getElementById('about-link');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const exploreEventsBtn = document.getElementById('explore-events-btn');
+        const homeContent = document.getElementById('home-content');
+        const discoverContent = document.getElementById('discover-content');
+        const aboutContent = document.getElementById('about-content');
+        const userProfileModal = document.getElementById('user-profile-modal');
+        const closeUserModal = document.getElementById('close-user-modal');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                z-index: 10000;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showSuccessToast(message) { showToast(message, 'success'); }
+        function showErrorToast(message) { showToast(message, 'error'); }
+        
+        // Gamification System
+        class GamificationSystem {
+            constructor() {
+                this.achievements = [
+                    { id: 'first_event', condition: (p, l, r) => r === 'event_created', name: 'Event Creator', points: 50, icon: 'fa-calendar-plus' },
+                    { id: 'social_butterfly', condition: (p, l, r) => r === 'followed_user', name: 'Social Butterfly', points: 25, icon: 'fa-user-friends' },
+                    { id: 'event_enthusiast', condition: (p, l, r) => p >= 500, name: 'Event Enthusiast', points: 100, icon: 'fa-fire' },
+                    { id: 'level_5', condition: (p, l, r) => l >= 5, name: 'Level 5 Explorer', points: 200, icon: 'fa-trophy' },
+                    { id: 'commentator', condition: (p, l, r) => r === 'comment_added', name: 'Commentator', points: 15, icon: 'fa-comment' },
+                    { id: 'early_bird', condition: (p, l, r) => r === 'early_registration', name: 'Early Bird', points: 30, icon: 'fa-clock' }
+                ];
+            }
+
+            calculateLevel(points) {
+                return Math.floor(points / 100) + 1;
+            }
+
+            calculateLevelProgress(points) {
+                const currentLevel = this.calculateLevel(points);
+                const pointsForCurrentLevel = (currentLevel - 1) * 100;
+                const pointsNeededForNextLevel = currentLevel * 100;
+                const pointsInCurrentLevel = points - pointsForCurrentLevel;
+                const progress = (pointsInCurrentLevel / 100) * 100;
+                
+                return {
+                    level: currentLevel,
+                    progress: progress,
+                    pointsInLevel: pointsInCurrentLevel,
+                    pointsForNextLevel: pointsNeededForNextLevel
+                };
+            }
+
+            async addPoints(userId, points, reason) {
+                const userRef = db.collection('users').doc(userId);
+                
+                try {
+                    const userDoc = await userRef.get();
+                    if (!userDoc.exists) throw new Error("User does not exist!");
+                    
+                    const userData = userDoc.data();
+                    const newPoints = (userData.points || 0) + points;
+                    const levelInfo = this.calculateLevelProgress(newPoints);
+                    
+                    await userRef.update({
+                        points: newPoints,
+                        level: levelInfo.level,
+                        lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Check for achievements
+                    await this.checkAchievements(userId, newPoints, levelInfo.level, reason);
+                    
+                    return { newPoints, newLevel: levelInfo.level, levelInfo };
+                } catch (error) {
+                    console.error('Error adding points:', error);
+                    throw error;
+                }
+            }
+
+            async checkAchievements(userId, points, level, reason) {
+                const userRef = db.collection('users').doc(userId);
+                const userDoc = await userRef.get();
+                const userData = userDoc.data();
+                const currentBadges = userData.badges || [];
+
+                for (const achievement of this.achievements) {
+                    if (achievement.condition(points, level, reason) && !currentBadges.includes(achievement.id)) {
+                        await this.awardBadge(userId, achievement);
+                    }
+                }
+            }
+
+            async awardBadge(userId, achievement) {
+                const userRef = db.collection('users').doc(userId);
+                
+                await userRef.update({
+                    badges: firebase.firestore.FieldValue.arrayUnion(achievement.id),
+                    points: firebase.firestore.FieldValue.increment(achievement.points)
+                });
+                
+                this.showAchievementPopup(achievement.name, achievement.points, achievement.icon);
+            }
+
+            showAchievementPopup(name, points, icon) {
+                const popup = document.createElement('div');
+                popup.className = 'achievement-popup';
+                popup.innerHTML = `
+                    <div style="display: flex; align-items: center;">
+                        <i class="fas ${icon}" style="color: #FFD700; font-size: 24px; margin-right: 10px;"></i>
+                        <div>
+                            <strong>Achievement Unlocked!</strong>
+                            <div>${name} +${points} points</div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(popup);
+                setTimeout(() => popup.remove(), 3000);
+            }
+
+            getBadgeName(badgeId) {
+                const badge = this.achievements.find(a => a.id === badgeId);
+                return badge ? badge.name : badgeId;
+            }
+
+            getBadgeIcon(badgeId) {
+                const badge = this.achievements.find(a => a.id === badgeId);
+                return badge ? badge.icon : 'fa-award';
+            }
+        }
+
+        // Initialize gamification system
+        const gamification = new GamificationSystem();
+
+        // Page navigation
+        function showHomePage() {
+            homeContent.style.display = 'block';
+            discoverContent.style.display = 'none';
+            aboutContent.style.display = 'none';
+            profileContainer.style.display = 'none';
+            createEventForm.style.display = 'none';
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            homeLink.classList.add('active');
+            
+            loadEvents();
+        }
+        
+        function showDiscoverPage() {
+            homeContent.style.display = 'none';
+            discoverContent.style.display = 'block';
+            aboutContent.style.display = 'none';
+            profileContainer.style.display = 'none';
+            createEventForm.style.display = 'none';
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            discoverLink.classList.add('active');
+            
+            loadDiscoverEvents();
+        }
+        
+        function showCategoriesPage() {
+            // For now, categories is part of home page
+            showHomePage();
+            document.querySelector('.category[data-category="All"]').click();
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            categoriesLink.classList.add('active');
+        }
+        
+        function showCreateEventPage() {
+            homeContent.style.display = 'none';
+            discoverContent.style.display = 'none';
+            aboutContent.style.display = 'none';
+            profileContainer.style.display = 'none';
+            createEventForm.style.display = 'block';
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            createEventLink.classList.add('active');
+        }
+        
+        function showAboutPage() {
+            homeContent.style.display = 'none';
+            discoverContent.style.display = 'none';
+            aboutContent.style.display = 'block';
+            profileContainer.style.display = 'none';
+            createEventForm.style.display = 'none';
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            aboutLink.classList.add('active');
+        }
+        
+        function showProfilePage() {
+            homeContent.style.display = 'none';
+            discoverContent.style.display = 'none';
+            aboutContent.style.display = 'none';
+            profileContainer.style.display = 'block';
+            createEventForm.style.display = 'none';
+            
+            updateProfileUI();
+            loadUserEvents();
+            loadFollowersAndFollowing();
+        }
+        
+        // Event listeners for navigation
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showHomePage();
+        });
+        
+        discoverLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showDiscoverPage();
+        });
+        
+        categoriesLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showCategoriesPage();
+        });
+        
+        createEventLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showCreateEventPage();
+        });
+        
+        aboutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAboutPage();
+        });
+        
+        profileLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showProfilePage();
+            dropdownMenu.classList.remove('show');
+        });
+        
+        myEventsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showProfilePage();
+            // Activate the registered events tab
+            document.querySelectorAll('.profile-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector('.profile-tab[data-tab="registered"]').classList.add('active');
+            
+            document.querySelectorAll('.profile-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById('registered-events').style.display = 'block';
+            dropdownMenu.classList.remove('show');
+        });
+        
+        leaderboardLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showProfilePage();
+            // Activate the leaderboard tab
+            document.querySelectorAll('.profile-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector('.profile-tab[data-tab="leaderboard"]').classList.add('active');
+            
+            document.querySelectorAll('.profile-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById('leaderboard').style.display = 'block';
+            loadLeaderboard();
+            dropdownMenu.classList.remove('show');
+        });
+        
+        exploreEventsBtn.addEventListener('click', () => {
+            showCreateEventPage();
+        });
+        
+        // Footer navigation links
+        document.querySelector('.footer-home-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            showHomePage();
+        });
+        
+        document.querySelector('.footer-discover-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            showDiscoverPage();
+        });
+        
+        document.querySelector('.footer-categories-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            showCategoriesPage();
+        });
+        
+        document.querySelector('.footer-create-event-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            showCreateEventPage();
+        });
+        
+        document.querySelector('.footer-about-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            showAboutPage();
+        });
+        
+        // Search functionality
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        function performSearch() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            if (searchTerm) {
+                // Filter events based on search term
+                const eventCards = document.querySelectorAll('.event-card');
+                let found = false;
+                
+                eventCards.forEach(card => {
+                    const title = card.querySelector('.event-title').textContent.toLowerCase();
+                    const description = card.querySelector('.event-description') ? 
+                        card.querySelector('.event-description').textContent.toLowerCase() : '';
+                    const location = card.querySelector('.event-location').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || description.includes(searchTerm) || location.includes(searchTerm)) {
+                        card.style.display = 'block';
+                        found = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                if (!found) {
+                    eventsGrid.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-search" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                            <h3 style="color: #666;">No events found</h3>
+                            <p style="color: #999;">Try different search terms</p>
+                        </div>
+                    `;
+                }
+            } else {
+                // If search is empty, show all events
+                loadEvents();
+            }
+        }
+        
+        // Check authentication state
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData();
+                createSampleEvents();
+                showHomePage();
+                setupRealTimeListeners();
+            } else {
+                // Redirect to login page if not authenticated
+                window.location.href = "index.html";
+            }
+        });
+        
+        // Toggle dropdown menu
+        userProfile.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userProfile.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+        
+        // Close user modal
+        closeUserModal.addEventListener('click', () => {
+            userProfileModal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === userProfileModal) {
+                userProfileModal.style.display = 'none';
+            }
+        });
+        
+        // Logout function
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            auth.signOut().then(() => {
+                window.location.href = "index.html";
+            });
+        });
+        
+        // Profile tabs
+        document.querySelectorAll('.profile-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.profile-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                tab.classList.add('active');
+                
+                document.querySelectorAll('.profile-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                const contentId = tab.dataset.tab === 'leaderboard' ? 'leaderboard' : `${tab.dataset.tab}-events`;
+                document.getElementById(contentId).style.display = 'block';
+                
+                // Load specific content based on tab
+                if (tab.dataset.tab === 'followers') {
+                    loadFollowersList();
+                } else if (tab.dataset.tab === 'following') {
+                    loadFollowingList();
+                } else if (tab.dataset.tab === 'leaderboard') {
+                    loadLeaderboard();
+                }
+            });
+        });
+        
+        // Load user data from Firestore
+        function loadUserData() {
+            db.collection('users').doc(currentUser.uid).get()
+            .then(doc => {
+                if (doc.exists) {
+                    userData = doc.data();
+                    updateUI();
+                } else {
+                    // Create user document if it doesn't exist
+                    db.collection('users').doc(currentUser.uid).set({
+                        name: currentUser.displayName || 'User',
+                        email: currentUser.email,
+                        college: '',
+                        academicYear: '',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        eventsCreated: 0,
+                        eventsRegistered: 0,
+                        followers: [],
+                        following: [],
+                        bio: 'Event enthusiast',
+                        points: 0,
+                        level: 1,
+                        badges: []
+                    }).then(() => {
+                        loadUserData();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading user data:', error);
+                showErrorToast('Failed to load user data');
+            });
+        }
+        
+        // Update UI with user data
+        function updateUI() {
+            userAvatar.textContent = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
+            userName.textContent = userData.name || 'User';
+        }
+        
+        // Update profile UI
+        function updateProfileUI() {
+            document.getElementById('profile-avatar').textContent = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
+            document.getElementById('profile-name').textContent = userData.name || 'User';
+            document.getElementById('profile-college').textContent = userData.college || 'Not specified';
+            document.getElementById('profile-year').textContent = userData.academicYear || 'Not specified';
+            document.getElementById('profile-email').textContent = userData.email || 'Not specified';
+            document.getElementById('events-created').textContent = userData.eventsCreated || 0;
+            document.getElementById('events-registered').textContent = userData.eventsRegistered || 0;
+            document.getElementById('user-points').textContent = userData.points || 0;
+            document.getElementById('user-level').textContent = userData.level || 1;
+            
+            // Update level progress
+            const levelInfo = gamification.calculateLevelProgress(userData.points || 0);
+            document.getElementById('level-progress').style.width = `${levelInfo.progress}%`;
+            document.getElementById('current-points').textContent = levelInfo.pointsInLevel;
+            document.getElementById('next-level-points').textContent = levelInfo.pointsForNextLevel;
+            
+            // Display badges if user has any
+            if (userData.badges && userData.badges.length > 0) {
+                document.getElementById('badges-container').style.display = 'block';
+                const badgesList = document.getElementById('badges-list');
+                badgesList.innerHTML = '';
+                
+                userData.badges.forEach(badgeId => {
+                    const badgeElement = document.createElement('span');
+                    badgeElement.className = 'gamification-badge';
+                    badgeElement.innerHTML = `
+                        <i class="fas ${gamification.getBadgeIcon(badgeId)}"></i> 
+                        ${gamification.getBadgeName(badgeId)}
+                    `;
+                    badgesList.appendChild(badgeElement);
+                });
+            }
+            
+            // Fill form fields
+            document.getElementById('profile-fullname').value = userData.name || '';
+            document.getElementById('profile-email-input').value = userData.email || '';
+            document.getElementById('profile-college-input').value = userData.college || '';
+            document.getElementById('profile-year-input').value = userData.academicYear || '';
+            document.getElementById('profile-city').value = userData.city || '';
+            document.getElementById('profile-dob').value = userData.dob || '';
+        }
+        
+        // Save profile changes
+        document.getElementById('profile-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const updatedData = {
+                name: document.getElementById('profile-fullname').value,
+                email: document.getElementById('profile-email-input').value,
+                college: document.getElementById('profile-college-input').value,
+                academicYear: document.getElementById('profile-year-input').value,
+                city: document.getElementById('profile-city').value,
+                dob: document.getElementById('profile-dob').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            db.collection('users').doc(currentUser.uid).update(updatedData)
+            .then(() => {
+                showSuccessToast('Profile updated successfully!');
+                loadUserData();
+                updateProfileUI();
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                showErrorToast('Error updating profile. Please try again.');
+            });
+        });
+        
+        // Create new event
+        document.getElementById('event-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const eventData = {
+                    title: document.getElementById('event-title').value,
+                    description: document.getElementById('event-description').value,
+                    category: document.getElementById('event-category').value,
+                    date: document.getElementById('event-date').value,
+                    time: document.getElementById('event-time').value,
+                    location: document.getElementById('event-location').value,
+                    address: document.getElementById('event-address').value,
+                    image: document.getElementById('event-image').value || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1350&q=80',
+                    organizerId: currentUser.uid,
+                    organizerName: userData.name,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    attendees: [],
+                    comments: []
+                };
+                
+                const docRef = await db.collection('events').add(eventData);
+                
+                // Award points for creating an event
+                await gamification.addPoints(currentUser.uid, 50, 'event_created');
+                
+                // Update user's events created count
+                await db.collection('users').doc(currentUser.uid).update({
+                    eventsCreated: firebase.firestore.FieldValue.increment(1)
+                });
+                
+                showSuccessToast('Event created successfully! +50 points');
+                document.getElementById('event-form').reset();
+                showHomePage();
+                
+            } catch (error) {
+                console.error('Error creating event:', error);
+                showErrorToast('Error creating event. Please try again.');
+            }
+        });
+        
+        // Function to create sample events
+        function createSampleEvents() {
+            const sampleEvents = [
+                {
+                    title: "Tech Innovators Summit 2025",
+                    description: "Join us for a day of inspiring talks from tech leaders and innovators shaping the future of technology. Network with professionals and learn about emerging trends.",
+                    category: "Conferences",
+                    date: "2025-10-15",
+                    time: "09:00",
+                    location: "Convention Center",
+                    address: "123 Tech Avenue, San Francisco, CA 94103",
+                    image: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "Tech Events Inc.",
+                    attendees: []
+                },
+                {
+                    title: "Web Development Workshop",
+                    description: "Hands-on workshop covering the latest in web development frameworks and best practices. Bring your laptop and code along with our expert instructors.",
+                    category: "Technical",
+                    date: "2025-10-20",
+                    time: "14:00",
+                    location: "Coding Academy",
+                    address: "456 Developer Road, Austin, TX 73301",
+                    image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "Web Dev Community",
+                    attendees: []
+                },
+                {
+                    title: "Startup Pitch Competition",
+                    description: "Witness innovative startup ideas and network with entrepreneurs and investors. Great opportunity for aspiring founders.",
+                    category: "Business",
+                    date: "2025-11-05",
+                    time: "10:00",
+                    location: "Innovation Hub",
+                    address: "789 Startup Street, Boston, MA 02108",
+                    image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "Entrepreneur Network",
+                    attendees: []
+                },
+                {
+                    title: "AI & Machine Learning Conference",
+                    description: "Explore the latest advancements in artificial intelligence and machine learning with industry experts and researchers.",
+                    category: "Technical",
+                    date: "2025-11-15",
+                    time: "09:30",
+                    location: "Tech Conference Center",
+                    address: "101 AI Boulevard, Seattle, WA 98101",
+                    image: "https://images.unsplash.com/photo-1555255707-c07966088b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    organizerName: "AI Research Group",
+                    attendees: []
+                }
+            ];
+
+            // Check if events already exist to avoid duplicates
+            db.collection('events').get().then(snapshot => {
+                if (snapshot.empty) {
+                    sampleEvents.forEach(event => {
+                        db.collection('events').add({
+                            ...event,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            organizerId: 'sample_organizer', // Use a sample ID for demo
+                            comments: []
+                        });
+                    });
+                }
+            });
+        }
+
+        // Load events from Firestore with pagination
+        function loadEvents() {
+            eventsGrid.innerHTML = '<div class="spinner" id="loading-spinner"></div>';
+            lastEventDoc = null;
+            
+            db.collection('events').orderBy('createdAt', 'desc').limit(EVENTS_PER_PAGE).get()
+            .then(querySnapshot => {
+                eventsGrid.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    eventsGrid.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                            <h3 style="color: #666;">No events found</h3>
+                            <p style="color: #999;">Be the first to create an event!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const event = doc.data();
+                    event.id = doc.id;
+                    createEventCard(event, eventsGrid);
+                });
+                
+                lastEventDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+                
+                // Show load more button if there might be more events
+                if (querySnapshot.size === EVENTS_PER_PAGE) {
+                    loadMoreBtn.style.display = 'block';
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+                
+                addEventListeners();
+            })
+            .catch(error => {
+                console.error('Error loading events:', error);
+                showErrorToast('Failed to load events');
+            });
+        }
+        
+        // Load more events
+        loadMoreBtn.addEventListener('click', () => {
+            let query = db.collection('events').orderBy('createdAt', 'desc').limit(EVENTS_PER_PAGE);
+            
+            if (lastEventDoc) {
+                query = query.startAfter(lastEventDoc);
+            }
+            
+            query.get().then(querySnapshot => {
+                if (querySnapshot.empty) {
+                    loadMoreBtn.style.display = 'none';
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const event = doc.data();
+                    event.id = doc.id;
+                    createEventCard(event, eventsGrid);
+                });
+                
+                lastEventDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+                
+                // Hide load more button if we've loaded all events
+                if (querySnapshot.size < EVENTS_PER_PAGE) {
+                    loadMoreBtn.style.display = 'none';
+                }
+                
+                addEventListeners();
+            });
+        });
+        
+        // Load discover events
+        function loadDiscoverEvents() {
+            const discoverEventsGrid = document.getElementById('discover-events-grid');
+            discoverEventsGrid.innerHTML = '<div class="spinner" id="loading-spinner"></div>';
+            
+            db.collection('events').orderBy('date', 'asc').get()
+            .then(querySnapshot => {
+                discoverEventsGrid.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    discoverEventsGrid.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                            <h3 style="color: #666;">No events found</h3>
+                            <p style="color: #999;">Be the first to create an event!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const event = doc.data();
+                    event.id = doc.id;
+                    createEventCard(event, discoverEventsGrid);
+                });
+                
+                addEventListeners();
+            })
+            .catch(error => {
+                console.error('Error loading discover events:', error);
+                showErrorToast('Failed to load events');
+            });
+        }
+        
+        // Create event card
+        function createEventCard(event, container) {
+            const isRegistered = event.attendees && event.attendees.includes(currentUser.uid);
+            
+            const eventCard = document.createElement('div');
+            eventCard.className = 'event-card';
+            eventCard.innerHTML = `
+                <div class="event-image">
+                    <img src="${event.image}" alt="${event.title}">
+                </div>
+                <div class="event-content">
+                    <div class="event-date">
+                        <i class="far fa-calendar-alt"></i> ${formatDate(event.date)} at ${event.time}
+                    </div>
+                    <h3 class="event-title">${event.title}</h3>
+                    <div class="event-description" style="display: none;">${event.description}</div>
+                    <div class="event-category" style="display: none;">${event.category}</div>
+                    <div class="event-location">
+                        <i class="fas fa-map-marker-alt"></i> ${event.location}
+                    </div>
+                    <div class="event-organizer">
+                        <div class="organizer-avatar">${event.organizerName ? event.organizerName.charAt(0).toUpperCase() : 'O'}</div>
+                        <div class="organizer-name">${event.organizerName}</div>
+                        <button class="follow-btn">Follow</button>
+                    </div>
+                    <div class="event-actions">
+                        <button class="register-btn ${isRegistered ? 'registered' : ''}" data-event-id="${event.id}">
+                            ${isRegistered ? 'Registered' : 'Register'}
+                        </button>
+                        <button class="view-map-btn" onclick="viewOnMap('${event.address}')">
+                            <i class="fas fa-map"></i> View Map
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(eventCard);
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        // View event on map
+        function viewOnMap(address) {
+            const encodedAddress = encodeURIComponent(address);
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+        }
+        
+        // Add event listeners to dynamic elements
+        function addEventListeners() {
+            // Register for event buttons
+            document.querySelectorAll('.register-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const eventId = this.dataset.eventId;
+                    const isRegistered = this.classList.contains('registered');
+                    
+                    if (isRegistered) {
+                        unregisterFromEvent(eventId, this);
+                    } else {
+                        registerForEvent(eventId, this);
+                    }
+                });
+            });
+            
+            // Follow buttons
+            document.querySelectorAll('.follow-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const organizerName = this.parentElement.querySelector('.organizer-name').textContent;
+                    followUser(organizerName, this);
+                });
+            });
+            
+            // Category filtering
+            document.querySelectorAll('.category').forEach(category => {
+                category.addEventListener('click', function() {
+                    document.querySelectorAll('.category').forEach(cat => {
+                        cat.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const selectedCategory = this.dataset.category;
+                    filterEventsByCategory(selectedCategory);
+                });
+            });
+        }
+        
+        // Filter events by category
+        function filterEventsByCategory(category) {
+            const eventCards = document.querySelectorAll('.event-card');
+            
+            eventCards.forEach(card => {
+                const eventCategory = card.querySelector('.event-category').textContent;
+                
+                if (category === 'All' || eventCategory === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Register for an event
+        async function registerForEvent(eventId, button) {
+            try {
+                await db.collection('events').doc(eventId).update({
+                    attendees: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+                });
+                
+                button.textContent = 'Registered';
+                button.classList.add('registered');
+                
+                // Award points for event registration
+                await gamification.addPoints(currentUser.uid, 10, 'event_registration');
+                
+                // Update user's events registered count
+                await db.collection('users').doc(currentUser.uid).update({
+                    eventsRegistered: firebase.firestore.FieldValue.increment(1)
+                });
+                
+                loadUserData();
+                showSuccessToast('Successfully registered for event! +10 points');
+                
+            } catch (error) {
+                console.error('Error registering for event:', error);
+                showErrorToast('Error registering for event');
+            }
+        }
+        
+        // Unregister from an event
+        async function unregisterFromEvent(eventId, button) {
+            try {
+                await db.collection('events').doc(eventId).update({
+                    attendees: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
+                });
+                
+                button.textContent = 'Register';
+                button.classList.remove('registered');
+                
+                // Update user's events registered count
+                await db.collection('users').doc(currentUser.uid).update({
+                    eventsRegistered: firebase.firestore.FieldValue.increment(-1)
+                });
+                
+                loadUserData();
+                showSuccessToast('Unregistered from event');
+                
+            } catch (error) {
+                console.error('Error unregistering from event:', error);
+                showErrorToast('Error unregistering from event');
+            }
+        }
+        
+        // Follow a user
+        async function followUser(userName, button) {
+            try {
+                if (button.textContent === 'Follow') {
+                    button.textContent = 'Following';
+                    button.style.background = '#ed672d';
+                    button.style.color = 'white';
+                    
+                    if (!userData.following) userData.following = [];
+                    userData.following.push(userName);
+                    
+                    await db.collection('users').doc(currentUser.uid).update({
+                        following: userData.following
+                    });
+                    
+                    // Award points for following a user
+                    await gamification.addPoints(currentUser.uid, 5, 'followed_user');
+                    
+                    showSuccessToast(`You're now following ${userName}! +5 points`);
+                } else {
+                    button.textContent = 'Follow';
+                    button.style.background = 'none';
+                    button.style.color = '#ed672d';
+                    
+                    if (userData.following) {
+                        userData.following = userData.following.filter(name => name !== userName);
+                        
+                        await db.collection('users').doc(currentUser.uid).update({
+                            following: userData.following
+                        });
+                    }
+                    
+                    showSuccessToast(`Unfollowed ${userName}`);
+                }
+                
+                loadUserData();
+            } catch (error) {
+                console.error('Error following user:', error);
+                showErrorToast('Error following user');
+            }
+        }
+        
+        // Load user's created and registered events for profile
+        function loadUserEvents() {
+            // Load created events
+            db.collection('events').where('organizerId', '==', currentUser.uid).get()
+            .then(querySnapshot => {
+                const createdEventsList = document.getElementById('created-events-list');
+                createdEventsList.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    createdEventsList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">You haven\'t created any events yet.</p>';
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const event = doc.data();
+                    const eventElement = createEventElementForProfile(event);
+                    createdEventsList.appendChild(eventElement);
+                });
+            });
+            
+            // Load registered events
+            db.collection('events').where('attendees', 'array-contains', currentUser.uid).get()
+            .then(querySnapshot => {
+                const registeredEventsList = document.getElementById('registered-events-list');
+                registeredEventsList.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    registeredEventsList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">You haven\'t registered for any events yet.</p>';
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const event = doc.data();
+                    const eventElement = createEventElementForProfile(event);
+                    registeredEventsList.appendChild(eventElement);
+                });
+            });
+        }
+        
+        // Create event element for profile page
+        function createEventElementForProfile(event) {
+            const eventElement = document.createElement('div');
+            eventElement.className = 'event-card';
+            eventElement.innerHTML = `
+                <div class="event-image">
+                    <img src="${event.image}" alt="${event.title}">
+                </div>
+                <div class="event-content">
+                    <div class="event-date">
+                        <i class="far fa-calendar-alt"></i> ${formatDate(event.date)} at ${event.time}
+                    </div>
+                    <h3 class="event-title">${event.title}</h3>
+                    <div class="event-location">
+                        <i class="fas fa-map-marker-alt"></i> ${event.location}
+                    </div>
+                    <div class="event-actions">
+                        <button class="view-map-btn" onclick="viewOnMap('${event.address}')">
+                            <i class="fas fa-map"></i> View Map
+                        </button>
+                        <span style="color: #666; font-size: 0.9rem;">
+                            ${event.attendees ? event.attendees.length : 0} attendees
+                        </span>
+                    </div>
+                </div>
+            `;
+            return eventElement;
+        }
+        
+        // Load followers and following lists
+        function loadFollowersAndFollowing() {
+            loadFollowersList();
+            loadFollowingList();
+        }
+        
+        function loadFollowersList() {
+            const followersList = document.getElementById('followers-list');
+            followersList.innerHTML = '';
+            
+            // Sample followers for demo
+            const sampleFollowers = [
+                { name: "Alex Johnson", college: "Tech University" },
+                { name: "Maria Garcia", college: "Business College" },
+                { name: "Sam Wilson", college: "Design Institute" }
+            ];
+            
+            sampleFollowers.forEach(follower => {
+                const userCard = createUserCard(follower);
+                followersList.appendChild(userCard);
+            });
+        }
+        
+        function loadFollowingList() {
+            const followingList = document.getElementById('following-list');
+            followingList.innerHTML = '';
+            
+            // Sample following for demo
+            const sampleFollowing = [
+                { name: "Tech Events Inc.", college: "Event Organizer" },
+                { name: "Web Dev Community", college: "Community Group" },
+                { name: "Creative Collective", college: "Art Organization" }
+            ];
+            
+            sampleFollowing.forEach(user => {
+                const userCard = createUserCard(user);
+                followingList.appendChild(userCard);
+            });
+        }
+        
+        // Load leaderboard
+        async function loadLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            leaderboardList.innerHTML = '<div class="spinner"></div>';
+            
+            try {
+                const snapshot = await db.collection('users')
+                    .orderBy('points', 'desc')
+                    .limit(10)
+                    .get();
+                
+                leaderboardList.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    leaderboardList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No users found.</p>';
+                    return;
+                }
+                
+                let rank = 1;
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const userCard = document.createElement('div');
+                    userCard.className = 'user-card';
+                    
+                    // Highlight current user
+                    const isCurrentUser = doc.id === currentUser.uid;
+                    if (isCurrentUser) {
+                        userCard.style.border = '2px solid #ed672d';
+                    }
+                    
+                    userCard.innerHTML = `
+                        <div style="display: flex; align-items: center; width: 100%;">
+                            <div class="leaderboard-rank">#${rank}</div>
+                            <div class="user-card-avatar">${user.name.charAt(0)}</div>
+                            <div class="user-card-info" style="flex: 1;">
+                                <h3>${user.name} ${isCurrentUser ? '<span style="color: #ed672d;">(You)</span>' : ''}</h3>
+                                <p>Level ${user.level || 1} • ${user.points || 0} points</p>
+                            </div>
+                            <div class="points-display">${user.points || 0}</div>
+                        </div>
+                    `;
+                    leaderboardList.appendChild(userCard);
+                    rank++;
+                });
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                leaderboardList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Error loading leaderboard.</p>';
+            }
+        }
+        
+        function createUserCard(user) {
+            const userCard = document.createElement('div');
+            userCard.className = 'user-card';
+            userCard.innerHTML = `
+                <div class="user-card-avatar">${user.name.charAt(0)}</div>
+                <div class="user-card-info">
+                    <h3>${user.name}</h3>
+                    <p>${user.college}</p>
+                </div>
+            `;
+            
+            userCard.addEventListener('click', () => {
+                showUserProfile(user);
+            });
+            
+            return userCard;
+        }
+        
+        function showUserProfile(user) {
+            const modalUserName = document.getElementById('modal-user-name');
+            const modalUserContent = document.getElementById('modal-user-content');
+            
+            modalUserName.textContent = user.name;
+            modalUserContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div class="team-member-avatar" style="width: 100px; height: 100px; font-size: 2rem;">${user.name.charAt(0)}</div>
+                    <h3>${user.name}</h3>
+                    <p>${user.college}</p>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Events Created</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">45</div>
+                        <div class="stat-label">Events Attended</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">1.2K</div>
+                        <div class="stat-label">Followers</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">350</div>
+                        <div class="stat-label">Following</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <p><strong>Bio:</strong> Passionate about events and community building. Always looking for new opportunities to connect and learn.</p>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn" style="margin: 5px;">Follow</button>
+                    <button class="btn" style="margin: 5px; background: #6c757d;">Message</button>
+                </div>
+            `;
+            
+            userProfileModal.style.display = 'flex';
+        }
+        
+        // Apply filters for discover page
+        document.getElementById('apply-filters').addEventListener('click', () => {
+            const category = document.getElementById('discover-category').value;
+            const date = document.getElementById('discover-date').value;
+            const location = document.getElementById('discover-location').value.toLowerCase();
+            
+            const eventCards = document.querySelectorAll('#discover-events-grid .event-card');
+            
+            eventCards.forEach(card => {
+                const eventCategory = card.querySelector('.event-category').textContent;
+                const eventDate = card.querySelector('.event-date').textContent;
+                const eventLocation = card.querySelector('.event-location').textContent.toLowerCase();
+                
+                let showCard = true;
+                
+                if (category !== 'All' && eventCategory !== category) {
+                    showCard = false;
+                }
+                
+                if (date && !eventDate.includes(new Date(date).toLocaleDateString().split(',')[0])) {
+                    showCard = false;
+                }
+                
+                if (location && !eventLocation.includes(location)) {
+                    showCard = false;
+                }
+                
+                card.style.display = showCard ? 'block' : 'none';
+            });
+        });
+        
+        // Setup real-time listeners
+        function setupRealTimeListeners() {
+            // Real-time events updates
+            db.collection('events').orderBy('createdAt', 'desc').limit(10)
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            // New event added - could show a notification
+                            if (currentUser && change.doc.data().organizerId !== currentUser.uid) {
+                                showToast(`New event: ${change.doc.data().title}`, 'info');
+                            }
+                        }
+                    });
+                });
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    loadUserData();
+                    createSampleEvents();
+                    showHomePage();
+                } else {
+                    // Redirect to login page
+                    window.location.href = "index.html";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
